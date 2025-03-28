@@ -13,9 +13,13 @@ A super-minimal, mobile-first expense tracking application for personal use betw
    - List all expenses chronologically
    - Display amount, category, timestamp, and notes (if provided)
    - Running total of all expenses
-3. **Future Enhancements (Later Phases)**
+   - Totals by category
+3. **Data Management**
+   - Clear all expenses with a button
+   - Export expenses to CSV for review
+4. **Future Enhancements (Later Phases)**
    - Filter/sort by category
-   - Clear all data option
+   - Filter by month for export
 
 ## Technical Requirements
 
