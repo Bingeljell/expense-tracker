@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Ramini's Expense Tracker</title>
+  <title>Expense Tracker</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="p-4 max-w-md mx-auto">
-  <h1 class="text-2xl mb-4">Ramini's Expense Tracker</h1>
+  <h1 class="text-2xl mb-4">Expense Tracker</h1>
   
   <form id="expenseForm" class="mb-6 space-y-3">
     <input type="number" id="amount" placeholder="Amount" class="border p-2 w-full" step="0.01">
@@ -22,26 +22,49 @@
     <button type="submit" class="bg-blue-500 text-white p-3 w-full rounded">Add Expense</button>
   </form>
 
-  <select id="category" class="border p-2 w-full mb-2">
-    <option value="Uncategorized">Uncategorized</option>
-    <option value="Groceries">Groceries</option>
-    <option value="Dining">Dining</option>
-    <option value="Utilities">Utilities</option>
-    <option value="Other">Other</option>
-  </select>
-
-  <div id="total" class="text-lg mb-4 font-bold"></div> <!-- New total display -->
-  <ul id="expenseList" class="list-decimal pl-5 space-y-2">
+  <div id="total" class="text-lg mb-4 font-bold"></div>
+  <div id="categoryTotals" class="mb-4"></div>
+  <button id="clearButton" class="bg-red-500 text-white p-3 w-full rounded mb-4">Clear All Expenses</button>
+  <ul id="expenseList" class="list-decimal pl-5 space-y-2"></ul>
 
   <script>
     const form = document.getElementById('expenseForm');
     const list = document.getElementById('expenseList');
-    const totalDiv = document.getElementById('total'); // Grab the total div
+    const totalDiv = document.getElementById('total');
+    const categoryTotalsDiv = document.getElementById('categoryTotals');
+    const clearButton = document.getElementById('clearButton');
     let expenses = JSON.parse(localStorage.getItem('expenses')) || [];
 
-    function updateTotal() {
-      const total = expenses.reduce((sum, exp) => sum + exp.amount, 0).toFixed(2);
-      totalDiv.textContent = `Total: ₹${total}`;
+    function formatTimestamp(date) {
+      const options = {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+      };
+      return date.toLocaleString('en-US', options).replace(',', '');
+    }
+
+    function updateTotals() {
+      const overallTotal = expenses.reduce((sum, exp) => sum + exp.amount, 0).toFixed(2);
+      totalDiv.textContent = `Overall Total: ₹${overallTotal}`;
+
+      const totalsByCategory = expenses.reduce((acc, exp) => {
+        acc[exp.category] = (acc[exp.category] || 0) + exp.amount;
+        return acc;
+      }, {});
+      
+      categoryTotalsDiv.innerHTML = '<h2 class="text-md font-semibold mb-2">Totals by Category:</h2>';
+      const ul = document.createElement('ul');
+      ul.className = 'list-disc pl-5';
+      for (const [category, total] of Object.entries(totalsByCategory)) {
+        const li = document.createElement('li');
+        li.textContent = `${category}: ₹${total.toFixed(2)}`;
+        ul.appendChild(li);
+      }
+      categoryTotalsDiv.appendChild(ul);
     }
 
     function saveAndRender() {
@@ -50,10 +73,10 @@
       expenses.forEach(exp => {
         const li = document.createElement('li');
         li.textContent = `${exp.amount} - ${exp.category} (${exp.timestamp})`;
-        if (exp.notes) li.textContent += ` - ${exp.notes}`; // Show notes if present
+        if (exp.notes) li.textContent += ` - ${exp.notes}`;
         list.appendChild(li);
       });
-      updateTotal(); // Update total after rendering
+      updateTotals();
     }
 
     form.addEventListener('submit', (e) => {
@@ -61,8 +84,8 @@
       const expense = {
         id: Date.now().toString(),
         amount: parseFloat(document.getElementById('amount').value),
-        category: document.getElementById('category').value || 'Uncategorized',
-        timestamp: new Date().toLocaleString(),
+        category: document.getElementById('category').value,
+        timestamp: formatTimestamp(new Date()),
         notes: document.getElementById('notes').value
       };
       expenses.push(expense);
@@ -70,7 +93,14 @@
       form.reset();
     });
 
-    saveAndRender(); // Load existing expenses on start
+    clearButton.addEventListener('click', () => {
+      if (confirm('Are you sure you want to clear all expenses?')) {
+        expenses = [];
+        saveAndRender();
+      }
+    });
+
+    saveAndRender();
   </script>
 </body>
 </html>
