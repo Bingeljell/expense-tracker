@@ -7,27 +7,53 @@
 <body class="p-4 max-w-md mx-auto">
   <h1 class="text-2xl mb-4">Ramini's Expense Tracker</h1>
   
-  <form id="expenseForm" class="mb-4">
-    <input type="number" id="amount" placeholder="Amount" class="border p-2 w-full mb-2" step="0.01">
-    <input type="text" id="category" placeholder="Category" class="border p-2 w-full mb-2">
-    <input type="text" id="notes" placeholder="Notes (optional)" class="border p-2 w-full mb-2">
-    <button type="submit" class="bg-blue-500 text-white p-2 w-full">Add Expense</button>
+  <form id="expenseForm" class="mb-6 space-y-3">
+    <input type="number" id="amount" placeholder="Amount" class="border p-2 w-full" step="0.01">
+    <select id="category" class="border p-2 w-full">
+      <option value="Uncategorized">Uncategorized</option>
+      <option value="Groceries">Groceries</option>
+      <option value="Dining">Dining</option>
+      <option value="Utilities">Utilities</option>
+      <option value="Transport">Transport</option>
+      <option value="Shopping">Shopping</option>
+      <option value="Other">Other</option>
+    </select>
+    <input type="text" id="notes" placeholder="Notes (optional)" class="border p-2 w-full">
+    <button type="submit" class="bg-blue-500 text-white p-3 w-full rounded">Add Expense</button>
   </form>
 
-  <ul id="expenseList" class="list-decimal pl-5"></ul>
+  <select id="category" class="border p-2 w-full mb-2">
+    <option value="Uncategorized">Uncategorized</option>
+    <option value="Groceries">Groceries</option>
+    <option value="Dining">Dining</option>
+    <option value="Utilities">Utilities</option>
+    <option value="Other">Other</option>
+  </select>
+
+  <div id="total" class="text-lg mb-4 font-bold"></div> <!-- New total display -->
+  <ul id="expenseList" class="list-decimal pl-5 space-y-2">
 
   <script>
     const form = document.getElementById('expenseForm');
     const list = document.getElementById('expenseList');
+    const totalDiv = document.getElementById('total'); // Grab the total div
     let expenses = JSON.parse(localStorage.getItem('expenses')) || [];
+
+    function updateTotal() {
+      const total = expenses.reduce((sum, exp) => sum + exp.amount, 0).toFixed(2);
+      totalDiv.textContent = `Total: ₹${total}`;
+    }
+
     function saveAndRender() {
       localStorage.setItem('expenses', JSON.stringify(expenses));
       list.innerHTML = '';
       expenses.forEach(exp => {
         const li = document.createElement('li');
         li.textContent = `${exp.amount} - ${exp.category} (${exp.timestamp})`;
+        if (exp.notes) li.textContent += ` - ${exp.notes}`; // Show notes if present
         list.appendChild(li);
       });
+      updateTotal(); // Update total after rendering
     }
 
     form.addEventListener('submit', (e) => {
