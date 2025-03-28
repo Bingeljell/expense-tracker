@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Expense Tracker</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="p-4 max-w-md mx-auto">
+  <h1 class="text-2xl mb-4">Expense Tracker</h1>
+  
+  <form id="expenseForm" class="mb-4">
+    <input type="number" id="amount" placeholder="Amount" class="border p-2 w-full mb-2" step="0.01">
+    <input type="text" id="category" placeholder="Category" class="border p-2 w-full mb-2">
+    <input type="text" id="notes" placeholder="Notes (optional)" class="border p-2 w-full mb-2">
+    <button type="submit" class="bg-blue-500 text-white p-2 w-full">Add Expense</button>
+  </form>
+
+  <ul id="expenseList" class="list-decimal pl-5"></ul>
+
+  <script>
+    const form = document.getElementById('expenseForm');
+    const list = document.getElementById('expenseList');
+    let expenses = JSON.parse(localStorage.getItem('expenses')) || [];
+
+    function saveAndRender() {
+      localStorage.setItem('expenses', JSON.stringify(expenses));
+      list.innerHTML = '';
+      expenses.forEach(exp => {
+        const li = document.createElement('li');
+        li.textContent = `${exp.amount} - ${exp.category} (${exp.timestamp})`;
+        list.appendChild(li);
+      });
+    }
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const expense = {
+        id: Date.now().toString(),
+        amount: parseFloat(document.getElementById('amount').value),
+        category: document.getElementById('category').value || 'Uncategorized',
+        timestamp: new Date().toLocaleString(),
+        notes: document.getElementById('notes').value
+      };
+      expenses.push(expense);
+      saveAndRender();
+      form.reset();
+    });
+
+    saveAndRender(); // Load existing expenses on start
+  </script>
+</body>
+</html>
